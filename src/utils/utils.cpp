@@ -8,11 +8,11 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <openssl/md5.h>
+//#include <openssl/md5.h>
 #include <execinfo.h>
-#include <openssl/evp.h>
-#include <openssl/sha.h>
-#include <openssl/crypto.h>
+//#include <openssl/evp.h>
+//#include <openssl/sha.h>
+//#include <openssl/crypto.h>
 #include <ifaddrs.h>
 #include <net/if.h>
 #include <arpa/inet.h>
@@ -36,6 +36,8 @@ void printCallStack(void)
 
 void getMemoryInfo(MemoryInfo &info)
 {
+
+#if 0
     vector<string> labels{"MemTotal:", "MemFree:", "MemAvailable:", "Buffers:", "Cached:", "SwapCached:", "SwapTotal:", "SwapFree:"};
 
     ifstream meminfo = ifstream{"/proc/meminfo"};
@@ -63,6 +65,7 @@ void getMemoryInfo(MemoryInfo &info)
         }
     }
     meminfo.close();
+#endif
 }
 
 void parseProcSelfStat (double &vm, double &rss)

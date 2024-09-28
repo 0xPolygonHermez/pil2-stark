@@ -6,11 +6,14 @@ zkLog zklog;
 
 string zkLog::getThreadID (void)
 {
+#if 0
     pthread_t selfThreadID = pthread_self();
     mpz_class selfThreadIDScalar(selfThreadID);
     string selfThreadIDString = selfThreadIDScalar.get_str(16);
     uint64_t offset = selfThreadIDString.size() > 7 ? selfThreadIDString.size() - 7 : 0;
     return selfThreadIDString.substr(offset, 7);
+#endif
+    return "aaa";
 }
 
 zkLog::zkLog () : jsonLogs(true)

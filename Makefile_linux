@@ -12,12 +12,9 @@ WITNESS_LIB := ./witness_lib
 
 CXX := g++
 AS := nasm
-CXXFLAGS := -std=c++17 -Wall -pthread -Wno-unused-label -rdynamic -I/opt/homebrew/opt/gmp/include  -I/opt/homebrew/Cellar/libomp/19.1.0/include/ -I/opt/homebrew/Cellar/nlohmann-json/3.11.3/include/ #-Wfatal-errors
-#LDFLAGS := -lprotobuf -lsodium -lgpr -lpthread -lpqxx -lpq -lgmp -lstdc++ -lgmpxx -lsecp256k1 -lcrypto -luuid -fopenmp -liomp5 
-LDFLAGS := -L/opt/homebrew/opt/gmp/lib -lprotobuf -lsodium -lgpr -lpthread -lpqxx -lpq -lgmp -lstdc++ -lgmpxx -lsecp256k1 -lcrypto -luuid -Xpreprocessor -fopenmp  -liomp5 
-#LDFLAGS := -lprotobuf -lsodium -lgpr -lpthread -lpqxx -lpq -lgmp -lstdc++ -lgmpxx -lsecp256k1 -lcrypto -luuid -Xpreprocessor -fopenmp  -liomp5 
-
-CFLAGS := -Xpreprocessor -fopenmp
+CXXFLAGS := -std=c++17 -Wall -pthread -Wno-unused-label -rdynamic #-Wfatal-errors
+LDFLAGS := -lprotobuf -lsodium -lgpr -lpthread -lpqxx -lpq -lgmp -lstdc++ -lgmpxx -lsecp256k1 -lcrypto -luuid -fopenmp -liomp5 
+CFLAGS := -fopenmp
 ASFLAGS := -felf64
 
 # Check if AVX-512 is supported
@@ -58,10 +55,9 @@ CPPFLAGS ?= $(INC_FLAGS) $(INC_FLAGS_EXT) -MMD -MP
 
 INC_DIRS := $(shell find $(SRC_DIRS) -type d) $(sort $(dir))
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
-INC_FLAGS += 
 
 
-SRCS_STARKS_LIB := $(shell find ./src/api/starks_api.* ./src/goldilocks/src ./src/config ./src/starkpil ./src/rapidsnark/binfile_utils.*  ./src/utils -name *.cpp -or -name *.c -or -name *.asm -or -name *.cc)
+SRCS_STARKS_LIB := $(shell find ./src/api/starks_api.* ./src/goldilocks/src ./src/config ./src/starkpil ./src/rapidsnark/binfile_utils.* ./src/ffiasm ./src/utils -name *.cpp -or -name *.c -or -name *.asm -or -name *.cc)
 OBJS_STARKS_LIB := $(SRCS_STARKS_LIB:%=$(BUILD_DIR)/%.o)
 DEPS_STARKS_LIB := $(OBJS_STARKS_LIB:.o=.d)
 
