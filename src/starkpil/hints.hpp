@@ -413,8 +413,9 @@ HintFieldValues getHintField(SetupCtx& setupCtx, Goldilocks::Element *buffer, Go
 
         hintFieldInfo.matrix_size = hintFieldVal.pos.size();
         hintFieldInfo.pos = new uint64_t[hintFieldInfo.matrix_size];
-        std::memcpy(hintFieldInfo.pos, &hintFieldVal.pos[0],  hintFieldInfo.matrix_size);
-
+        for(uint64_t i = 0; i < hintFieldInfo.matrix_size; ++i) {
+            hintFieldInfo.pos[i] =  hintFieldVal.pos[i];
+        }
         hintFieldValues.values[i] = hintFieldInfo;
     }
     
