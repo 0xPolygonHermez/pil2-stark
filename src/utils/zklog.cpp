@@ -1,8 +1,4 @@
 #include "zklog.hpp"
-#include "utils.hpp"
-#include "version.hpp"
-#include "logger.hpp"
-#include "starks_api.hpp"
 
 using namespace CPlusPlusLogging;
 zkLog zklog;
