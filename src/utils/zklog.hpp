@@ -4,7 +4,7 @@
 #include <string>
 #include <pthread.h>
 #include <vector>
-#include "logger.hpp
+#include "logger.hpp"
 #include "utils.hpp"
 #include "version.hpp"
 #include "starks_api.hpp"
