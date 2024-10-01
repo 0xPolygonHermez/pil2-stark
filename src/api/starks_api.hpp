@@ -55,7 +55,7 @@
 
     void treesGL_get_root(void *pStarks, uint64_t index, void *root);
 
-    void *calculate_xdivxsub(void *pStarks, void* xiChallenge, void *xDivXSub);
+    void calculate_xdivxsub(void *pStarks, void* xiChallenge, void *xDivXSub);
     void *get_fri_pol(void *pSetupCtx, void *buffer);
 
     void calculate_fri_polynomial(void *pStarks, void* buffer, void* public_inputs, void* challenges, void* subproofValues, void* evals, void *xDivXSub);
