@@ -6,6 +6,7 @@
 #include "definitions.hpp"
 #include <nlohmann/json.hpp>
 #include "zklog.hpp"
+#include "logger.hpp"
 #include "exit_process.hpp"
 
 using json = nlohmann::json;
