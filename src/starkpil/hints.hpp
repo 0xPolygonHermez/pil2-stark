@@ -13,7 +13,7 @@ struct HintFieldInfo {
     uint8_t offset;
     HintFieldType fieldType;
     Goldilocks::Element* values;
-    const char* stringValue;
+    uint8_t* stringValue;
     uint64_t matrix_size;
     uint64_t* pos;
 };
@@ -397,10 +397,11 @@ HintFieldValues getHintField(SetupCtx& setupCtx, Goldilocks::Element *buffer, Go
                 std::memcpy(hintFieldInfo.values, &challenges[FIELD_EXTENSION*hintFieldVal.id], FIELD_EXTENSION * sizeof(Goldilocks::Element));
             }
         } else if (hintFieldVal.operand == opType::string_) {
-            hintFieldInfo.size = 0;
             hintFieldInfo.values = nullptr;
             hintFieldInfo.fieldType = HintFieldType::String;
-            hintFieldInfo.stringValue = hintFieldVal.stringValue.c_str();
+            hintFieldInfo.size = hintFieldVal.stringValue.size();
+            hintFieldInfo.stringValue = new uint8_t[hintFieldVal.stringValue.size()];
+            std::memcpy(hintFieldInfo.stringValue, hintFieldVal.stringValue.data(), hintFieldVal.stringValue.size());
             hintFieldInfo.offset = 0;
             if(print_expression) cout << "string " << hintFieldVal.stringValue << endl;
         } else {

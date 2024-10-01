@@ -53,7 +53,6 @@
     void *starks_new(void *pSetupCtx);
     void starks_free(void *pStarks);
 
-    void extend_and_merkelize(void *pStarks, uint64_t step, void *buffer, void *proof, void *pBuffHelper);
     void treesGL_get_root(void *pStarks, uint64_t index, void *root);
 
     void *calculate_xdivxsub(void *pStarks, void* xiChallenge, void *xDivXSub);

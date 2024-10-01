@@ -233,12 +233,6 @@ void starks_free(void *pStarks)
     delete starks;
 }
 
-void extend_and_merkelize(void *pStarks, uint64_t step, void *buffer, void *pProof, void *pBuffHelper)
-{
-    auto starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->ffi_extend_and_merkelize(step, (Goldilocks::Element *)buffer, (FRIProof<Goldilocks::Element> *)pProof, (Goldilocks::Element *)pBuffHelper);
-}
-
 void treesGL_get_root(void *pStarks, uint64_t index, void *dst)
 {
     Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
