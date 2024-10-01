@@ -46,7 +46,7 @@ void TranscriptBN128::getField(uint64_t *output)
     {
         output[i] = getFields1();
     }
-    zklog.debug("Challenge: [ " + std::to_string(output[0]) + " " + std::to_string(output[1]) + " " + std::to_string(output[2]) + " ]");
+    zklog.debug("    Challenge: [ " + std::to_string(output[0]) + " " + std::to_string(output[1]) + " " + std::to_string(output[2]) + " ]");
 }
 
 RawFr::Element TranscriptBN128::getFields253()

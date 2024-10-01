@@ -124,7 +124,7 @@ void Logger::logIntoFile(std::string& data)
 
 void Logger::logOnConsole(std::string& data)
 {
-   cout << getCurrentTime() << "  " << data << endl;
+   cout << data << endl;
 }
 
 string Logger::getCurrentTime()
@@ -259,7 +259,7 @@ void Logger::buffer(std::ostringstream& stream) throw()
 void Logger::info(const char* text) throw()
 {
    string data;
-   data.append("[INFO]: ");
+   data.append("[INFO] PilStark: ");
    data.append(text);
 
    if((m_LogType == FILE_LOG) && (m_LogLevel >= LOG_LEVEL_INFO))
@@ -287,7 +287,7 @@ void Logger::info(std::ostringstream& stream) throw()
 void Logger::trace(const char* text) throw()
 {
    string data;
-   data.append("[TRACE]: ");
+   data.append("[TRACE] PilStark: ");
    data.append(text);
 
    if((m_LogType == FILE_LOG) && (m_LogLevel >= LOG_LEVEL_TRACE))
@@ -315,7 +315,7 @@ void Logger::trace(std::ostringstream& stream) throw()
 void Logger::debug(const char* text) throw()
 {
    string data;
-   data.append("[DEBUG]: ");
+   data.append("[DEBUG] PilStark: ");
    data.append(text);
 
    if((m_LogType == FILE_LOG) && (m_LogLevel >= LOG_LEVEL_DEBUG))

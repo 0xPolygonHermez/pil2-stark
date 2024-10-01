@@ -43,8 +43,7 @@ void TranscriptGL::getField(uint64_t* output)
         Goldilocks::Element val = getFields1();
         output[i] = val.fe;
     }
-    zklog.debug("Challenge: [ " + std::to_string(output[0]) + " " + std::to_string(output[1]) + " " + std::to_string(output[2]) + " ]");
-
+    zklog.debug("    Challenge: [ " + std::to_string(output[0]) + " " + std::to_string(output[1]) + " " + std::to_string(output[2]) + " ]");
 }
 
 void TranscriptGL::getState(Goldilocks::Element* output) {
