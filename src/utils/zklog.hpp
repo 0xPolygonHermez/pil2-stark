@@ -4,15 +4,16 @@
 #include <string>
 #include <pthread.h>
 #include <vector>
-#include "exit_process.hpp"
 
 using namespace std;
 
 enum zkLogType
 {
-    logTypeInfo = 0,
-    logTypeWarning = 1,
-    logTypeError = 2
+    logTypeTrace = 0,
+    logTypeDebug = 1,
+    logTypeInfo = 2,
+    logTypeWarning = 3,
+    logTypeError = 4
 };
 
 class LogTag
@@ -46,7 +47,9 @@ public:
     void setPID (const string &_pid) { pid = _pid; };
     void setJsonLogs (bool bJsonLogs) { jsonLogs = bJsonLogs; };
 
-    void info      (const string &message, const vector<LogTag> *tags = NULL) { log(logTypeInfo,    message, tags); };
+    void trace(const string &message, const vector<LogTag> *tags = NULL) { log(logTypeTrace, message, tags); };
+    void debug(const string &message, const vector<LogTag> *tags = NULL) { log(logTypeDebug, message, tags); };
+    void info(const string &message, const vector<LogTag> *tags = NULL) { log(logTypeInfo, message, tags); };
     void warning   (const string &message, const vector<LogTag> *tags = NULL) { log(logTypeWarning, message, tags); };
     void error     (const string &message, const vector<LogTag> *tags = NULL) { log(logTypeError,   message, tags); };
 };

@@ -6,6 +6,7 @@
 #include "definitions.hpp"
 #include <nlohmann/json.hpp>
 #include "zklog.hpp"
+#include "exit_process.hpp"
 
 using json = nlohmann::json;
 using ordered_json = nlohmann::ordered_json;
