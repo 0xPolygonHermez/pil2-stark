@@ -72,12 +72,14 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     treesGL[setupCtx.starkInfo.nStages + 1]->getRoot(verkey);
     starks.addTranscript(transcript, &verkey[0], nFieldElements);
 
-    if(!setupCtx.starkInfo.starkStruct.hashCommits) {
-        starks.addTranscriptGL(transcript, &publicInputs[0], setupCtx.starkInfo.nPublics);
-    } else {
-        ElementType hash[nFieldElements];
-        starks.calculateHash(hash, &publicInputs[0], setupCtx.starkInfo.nPublics);
-        starks.addTranscript(transcript, hash, nFieldElements);
+    if(setupCtx.starkInfo.nPublics > 0) {
+        if(!setupCtx.starkInfo.starkStruct.hashCommits) {
+            starks.addTranscriptGL(transcript, &publicInputs[0], setupCtx.starkInfo.nPublics);
+        } else {
+            ElementType hash[nFieldElements];
+            starks.calculateHash(hash, &publicInputs[0], setupCtx.starkInfo.nPublics);
+            starks.addTranscript(transcript, hash, nFieldElements);
+        }
     }
 
     TimerStopAndLog(STARK_STEP_0);
