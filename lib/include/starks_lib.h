@@ -67,8 +67,10 @@
     void compute_lev(void *pStarks, void *xiChallenge, void* LEv);
     void compute_evals(void *pStarks, void *buffer, void *LEv, void *evals, void *pProof);
 
-    void compute_fri_folding(void *pStarks, void *pProof, uint64_t step, void *buffer, void *pChallenge);
-    void compute_fri_queries(void *pStarks, void *pProof, uint64_t* friQueries);
+    void compute_fri_folding(void *pStarks, uint64_t step, void *buffer, void *pChallenge);
+    void compute_fri_merkelize(void *pStarks, void *pProof, uint64_t step, void *buffer);
+    void compute_queries(void *pStarks, void *pProof, uint64_t* friQueries);
+    void compute_fri_queries(void *pStarks, void *pProof, void *buffer, uint64_t* friQueries);
 
     void calculate_hash(void *pStarks, void *pHhash, void *pBuffer, uint64_t nElements);
     

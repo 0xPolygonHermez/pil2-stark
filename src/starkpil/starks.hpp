@@ -32,8 +32,10 @@ private:
     MerkleTreeType **treesGL;
     MerkleTreeType **treesFRI;
 
+    bool multiFri;
+
 public:
-    Starks(SetupCtx& setupCtx_) : setupCtx(setupCtx_)                                                    
+    Starks(SetupCtx& setupCtx_, bool multiFri_ = false) : setupCtx(setupCtx_), multiFri(multiFri_)                                                    
     {
         treesGL = new MerkleTreeType*[setupCtx.starkInfo.nStages + 2];
         treesGL[setupCtx.starkInfo.nStages + 1] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, (Goldilocks::Element *)setupCtx.constPols.pConstTreeAddress);
@@ -43,13 +45,15 @@ public:
             uint64_t nCols = setupCtx.starkInfo.mapSectionsN[section];
             treesGL[i] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, 1 << setupCtx.starkInfo.starkStruct.nBitsExt, nCols, NULL, false);
         }
-          
-        treesFRI = new MerkleTreeType*[setupCtx.starkInfo.starkStruct.steps.size() - 1];
-        for(uint64_t step = 0; step < setupCtx.starkInfo.starkStruct.steps.size() - 1; ++step) {
-            uint64_t nGroups = 1 << setupCtx.starkInfo.starkStruct.steps[step + 1].nBits;
-            uint64_t groupSize = (1 << setupCtx.starkInfo.starkStruct.steps[step].nBits) / nGroups;
 
-            treesFRI[step] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, nGroups, groupSize * FIELD_EXTENSION, NULL);
+        if(!multiFri_) {
+            treesFRI = new MerkleTreeType*[setupCtx.starkInfo.starkStruct.steps.size() - 1];
+            for(uint64_t step = 0; step < setupCtx.starkInfo.starkStruct.steps.size() - 1; ++step) {
+                uint64_t nGroups = 1 << setupCtx.starkInfo.starkStruct.steps[step + 1].nBits;
+                uint64_t groupSize = (1 << setupCtx.starkInfo.starkStruct.steps[step].nBits) / nGroups;
+
+                treesFRI[step] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, nGroups, groupSize * FIELD_EXTENSION, NULL);
+            }
         }
     };
     ~Starks()
@@ -60,11 +64,13 @@ public:
         }
         delete[] treesGL;
 
-        for (uint64_t i = 0; i < setupCtx.starkInfo.starkStruct.steps.size() - 1; i++)
-        {
-            delete treesFRI[i];
+        if(!multiFri) {
+            for (uint64_t i = 0; i < setupCtx.starkInfo.starkStruct.steps.size() - 1; i++)
+            {
+                delete treesFRI[i];
+            }
+            delete[] treesFRI;
         }
-        delete[] treesFRI;
         
     };
     
@@ -81,9 +87,11 @@ public:
     void computeEvals(Goldilocks::Element *buffer, Goldilocks::Element *LEv, Goldilocks::Element *evals, FRIProof<ElementType> &proof);
 
     void calculateXDivXSub(Goldilocks::Element *xiChallenge, Goldilocks::Element *xDivXSub);
-    
-    void computeFRIFolding(uint64_t step, FRIProof<ElementType> &fproof, Goldilocks::Element *buffer, Goldilocks::Element *challenge);
-    void computeFRIQueries(FRIProof<ElementType> &fproof, uint64_t* friQueries);
+
+    void computeFRIFolding(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *challenge);
+    void computeFRIMerkelize(uint64_t step, Goldilocks::Element *buffer, FRIProof<ElementType> &fproof);
+    void computeQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries);
+    void computeFRIQueries(FRIProof<ElementType> &fproof, Goldilocks::Element *buffer, uint64_t* friQueries);
 
     void calculateHash(ElementType* hash, Goldilocks::Element* buffer, uint64_t nElements);
 

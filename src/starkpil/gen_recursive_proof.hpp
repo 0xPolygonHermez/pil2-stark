@@ -236,9 +236,11 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     //--------------------------------
     TimerStart(STARK_STEP_FRI);
 
+    TimerStart(COMPUTE_FRI_POLYNOMIAL);
     Goldilocks::Element *xDivXSub = &pAddress[setupCtx.starkInfo.mapOffsets[std::make_pair("xDivXSubXi", true)]];
     starks.calculateXDivXSub(xiChallenge, xDivXSub);
     starks.calculateFRIPolynomial(pAddress, publicInputs, challenges, subproofValues, evals, xDivXSub);
+    TimerStopAndLog(COMPUTE_FRI_POLYNOMIAL);
 
     Goldilocks::Element challenge[FIELD_EXTENSION];
     Goldilocks::Element *friPol = &pAddress[setupCtx.starkInfo.mapOffsets[std::make_pair("f", true)]];
@@ -246,11 +248,11 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     TimerStart(STARK_FRI_FOLDING);
     for (uint64_t step = 0; step < setupCtx.starkInfo.starkStruct.steps.size(); step++)
     {
-            
-        starks.computeFRIFolding(step, proof, pAddress, challenge);
+        starks.computeFRIFolding(step, friPol, challenge);
         if (step < setupCtx.starkInfo.starkStruct.steps.size() - 1)
         {
-            starks.addTranscript(transcript, &proof.proof.fri.trees[step + 1].root[0], nFieldElements);
+            starks.computeFRIMerkelize(step, friPol, proof);
+            starks.addTranscript(transcript, &proof.proof.fri.treesFRI[step].root[0], nFieldElements);
         }
         else
         {
@@ -266,6 +268,7 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
         starks.getChallenge(transcript, *challenge);
     }
     TimerStopAndLog(STARK_FRI_FOLDING);
+    TimerStart(STARK_FRI_QUERIES);
 
     uint64_t friQueries[setupCtx.starkInfo.starkStruct.nQueries];
 
@@ -273,7 +276,9 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     starks.addTranscriptGL(transcriptPermutation, challenge, FIELD_EXTENSION);
     transcriptPermutation.getPermutations(friQueries, setupCtx.starkInfo.starkStruct.nQueries, setupCtx.starkInfo.starkStruct.steps[0].nBits);
 
-    starks.computeFRIQueries(proof, friQueries);
+    starks.computeQueries(proof, friQueries);
+    starks.computeFRIQueries(proof, friPol, friQueries);
+    TimerStopAndLog(STARK_FRI_QUERIES);
 
     TimerStopAndLog(STARK_STEP_FRI);
 
@@ -300,7 +305,6 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     if(!proofFile.empty()) {
         json2file(jProof, proofFile);
     }
-    TimerStopAndLog(PROOF_2_ZKIN);
 
     TimerStopAndLog(STARK_PROOF);
 

@@ -180,15 +180,28 @@ void Starks<ElementType>::calculateXDivXSub(Goldilocks::Element *xiChallenge, Go
 }
 
 template <typename ElementType>
-void Starks<ElementType>::computeFRIFolding(uint64_t step, FRIProof<ElementType> &fproof, Goldilocks::Element *buffer, Goldilocks::Element *challenge)
+void Starks<ElementType>::computeFRIFolding(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *challenge)
 {
-    FRI<ElementType>::fold(step, fproof, &buffer[setupCtx.starkInfo.mapOffsets[std::make_pair("f", true)]], challenge, setupCtx.starkInfo, treesFRI);
+    FRI<ElementType>::fold(step, buffer, challenge, setupCtx.starkInfo);
 }
 
 template <typename ElementType>
-void Starks<ElementType>::computeFRIQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries)
+void Starks<ElementType>::computeFRIMerkelize(uint64_t step, Goldilocks::Element *buffer, FRIProof<ElementType> &fproof)
 {
-    FRI<ElementType>::proveQueries(friQueries, fproof, treesGL, treesFRI, setupCtx.starkInfo);
+    FRI<ElementType>::merkelize(step, fproof, buffer, setupCtx.starkInfo, treesFRI[step]);
+}
+
+template <typename ElementType>
+void Starks<ElementType>::computeQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries)
+{
+    FRI<ElementType>::proveQueries(friQueries, fproof, treesGL, setupCtx.starkInfo);
+}
+
+
+template <typename ElementType>
+void Starks<ElementType>::computeFRIQueries(FRIProof<ElementType> &fproof, Goldilocks::Element* buffer, uint64_t *friQueries)
+{
+    FRI<ElementType>::proveFRIQueries(friQueries, buffer, fproof, treesFRI, setupCtx.starkInfo);
 }
 
 

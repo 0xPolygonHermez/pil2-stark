@@ -16,8 +16,10 @@ class FRI
 public:
     using MerkleTreeType = std::conditional_t<std::is_same<ElementType, Goldilocks::Element>::value, MerkleTreeGL, MerkleTreeBN128>;
 
-    static void fold(uint64_t step, FRIProof<ElementType> &proof, Goldilocks::Element *pol, Goldilocks::Element *challenge, StarkInfo starkInfo, MerkleTreeType** treesFRI);
-    static void proveQueries(uint64_t* friQueries, FRIProof<ElementType> &fproof, MerkleTreeType **trees, MerkleTreeType **treesFRI, StarkInfo starkInfo);
+    static void fold(uint64_t step, Goldilocks::Element *pol, Goldilocks::Element *challenge, StarkInfo starkInfo);
+    static void merkelize(uint64_t step, FRIProof<ElementType> &proof, Goldilocks::Element* pol, StarkInfo starkInfo, MerkleTreeType* treeFRI);
+    static void proveQueries(uint64_t* friQueries, FRIProof<ElementType> &fproof, MerkleTreeType **trees, StarkInfo starkInfo);
+    static void proveFRIQueries(uint64_t* friQueries, Goldilocks::Element* buffer, FRIProof<ElementType> &fproof, MerkleTreeType **treesFRI, StarkInfo starkInfo);
 private:
     static vector<MerkleProof<ElementType>> queryPol(MerkleTreeType *trees[], uint64_t nTrees, uint64_t idx, ElementType* buff);
     static vector<MerkleProof<ElementType>> queryPol(MerkleTreeType *tree, uint64_t idx, ElementType* buff);
