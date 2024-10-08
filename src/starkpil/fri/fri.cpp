@@ -5,22 +5,20 @@
 #include "zklog.hpp"
 
 template <typename ElementType>
-void FRI<ElementType>::fold(uint64_t step, Goldilocks::Element* pol, Goldilocks::Element *challenge, StarkInfo starkInfo) {
+void FRI<ElementType>::fold(uint64_t step, Goldilocks::Element* pol, Goldilocks::Element *challenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits) {
 
-    uint64_t polBits = step == 0 ? starkInfo.starkStruct.steps[0].nBits : starkInfo.starkStruct.steps[step - 1].nBits;
+    uint64_t polBits = step == 0 ? nBitsExt : prevBits;
 
     Goldilocks::Element polShiftInv = Goldilocks::inv(Goldilocks::shift());
     
     if(step > 0) {
-        for (uint64_t j = 0; j < starkInfo.starkStruct.steps[0].nBits - starkInfo.starkStruct.steps[step - 1].nBits; j++)
+        for (uint64_t j = 0; j < nBitsExt - prevBits; j++)
         {
             polShiftInv = polShiftInv * polShiftInv;
         }
     }
 
-    uint64_t reductionBits = polBits - starkInfo.starkStruct.steps[step].nBits;
-
-    uint64_t pol2N = 1 << (polBits - reductionBits);
+    uint64_t pol2N = 1 << currentBits;
     uint64_t nX = (1 << polBits) / pol2N;
 
     Goldilocks::Element wi = Goldilocks::inv(Goldilocks::w(polBits));
@@ -57,7 +55,6 @@ void FRI<ElementType>::fold(uint64_t step, Goldilocks::Element* pol, Goldilocks:
         {
             if (step != 0)
             {
-                cout << Goldilocks::toString(challenge[0]) << " " << Goldilocks::toString(challenge[1]) << " " << Goldilocks::toString(challenge[2]) << endl;
                 Goldilocks::Element ppar[nX * FIELD_EXTENSION];
                 Goldilocks::Element ppar_c[nX * FIELD_EXTENSION];
 
@@ -78,15 +75,12 @@ void FRI<ElementType>::fold(uint64_t step, Goldilocks::Element* pol, Goldilocks:
 }
 
 template <typename ElementType>
-void FRI<ElementType>::merkelize(uint64_t step, FRIProof<ElementType> &proof, Goldilocks::Element* pol, StarkInfo starkInfo, MerkleTreeType* treeFRI) {
-    uint64_t polBits = step == 0 ? starkInfo.starkStruct.steps[0].nBits : starkInfo.starkStruct.steps[step - 1].nBits;
-
-    uint64_t reductionBits = polBits - starkInfo.starkStruct.steps[step].nBits;
-    uint64_t pol2N = 1 << (polBits - reductionBits);
+void FRI<ElementType>::merkelize(uint64_t step, FRIProof<ElementType> &proof, Goldilocks::Element* pol, MerkleTreeType* treeFRI, uint64_t currentBits, uint64_t nextBits) {
+    uint64_t pol2N = 1 << currentBits;
 
     // Re-org in groups
     Goldilocks::Element *aux = new Goldilocks::Element[pol2N * FIELD_EXTENSION];
-    getTransposed(aux, pol, pol2N, starkInfo.starkStruct.steps[step + 1].nBits);
+    getTransposed(aux, pol, pol2N, nextBits);
 
     treeFRI->copySource(aux);
     treeFRI->merkelize();
@@ -96,9 +90,9 @@ void FRI<ElementType>::merkelize(uint64_t step, FRIProof<ElementType> &proof, Go
 }
 
 template <typename ElementType>
-void FRI<ElementType>::proveQueries(uint64_t* friQueries, FRIProof<ElementType> &fproof, MerkleTreeType **trees, StarkInfo starkInfo) {
+void FRI<ElementType>::proveQueries(uint64_t* friQueries, uint64_t nQueries, FRIProof<ElementType> &fproof, MerkleTreeType **trees, uint64_t nTrees) {
     uint64_t maxBuffSize = 0;
-    for(uint64_t i = 0; i < starkInfo.nStages + 2; ++i) {
+    for(uint64_t i = 0; i < nTrees; ++i) {
         uint64_t buffSize = trees[i]->getMerkleTreeWidth() + trees[i]->getMerkleProofSize();
         if(buffSize > maxBuffSize) {
             maxBuffSize = buffSize;
@@ -106,10 +100,8 @@ void FRI<ElementType>::proveQueries(uint64_t* friQueries, FRIProof<ElementType> 
     }
 
     ElementType *buff = new ElementType[maxBuffSize];
-    for (uint64_t i = 0; i < starkInfo.starkStruct.nQueries; i++)
-    {
-        uint64_t query = friQueries[i] % (1 << starkInfo.starkStruct.steps[0].nBits);
-        fproof.proof.fri.trees.polQueries[i] = queryPol(trees, starkInfo.nStages + 2, query, buff);
+    for (uint64_t i = 0; i < nQueries; i++) {
+        fproof.proof.fri.trees.polQueries[i] = queryPol(trees, nTrees, friQueries[i], buff);
     }
 
     delete[] buff;
@@ -118,30 +110,19 @@ void FRI<ElementType>::proveQueries(uint64_t* friQueries, FRIProof<ElementType> 
 }
 
 template <typename ElementType>
-void FRI<ElementType>::proveFRIQueries(uint64_t* friQueries, Goldilocks::Element* buffer, FRIProof<ElementType> &fproof, MerkleTreeType **treesFRI, StarkInfo starkInfo) {
-
-    uint64_t maxBuffSize = 0;
-    for (uint64_t i = 0; i < starkInfo.starkStruct.steps.size() - 1; i++) {
-        uint64_t buffSize = treesFRI[i]->getMerkleTreeWidth() + treesFRI[i]->getMerkleProofSize();
-        if(buffSize > maxBuffSize) {
-            maxBuffSize = buffSize;
-        }
+void FRI<ElementType>::proveFRIQueries(uint64_t* friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits, FRIProof<ElementType> &fproof, MerkleTreeType *treeFRI) {
+    ElementType *buff = new ElementType[treeFRI->getMerkleTreeWidth() + treeFRI->getMerkleProofSize()];
+    for (uint64_t i = 0; i < nQueries; i++) {
+        fproof.proof.fri.treesFRI[step - 1].polQueries[i] = queryPol(treeFRI,  friQueries[i] % (1 << currentBits), buff);
     }
-
-    ElementType *buff = new ElementType[maxBuffSize];
-    for (uint64_t i = 0; i < starkInfo.starkStruct.nQueries; i++)
-    {
-        for (uint64_t step = 1; step < starkInfo.starkStruct.steps.size(); step++)
-        {
-            uint64_t query = friQueries[i] % (1 << starkInfo.starkStruct.steps[step].nBits);
-            fproof.proof.fri.treesFRI[step - 1].polQueries[i] = queryPol(treesFRI[step - 1], query, buff);
-        }
-    }
-
-    fproof.proof.fri.setPol(buffer, (1 << starkInfo.starkStruct.steps[starkInfo.starkStruct.steps.size() - 1].nBits));
 
     delete[] buff;
+    return;
+}
 
+template <typename ElementType>
+void FRI<ElementType>::setFinalPol(FRIProof<ElementType> &fproof, Goldilocks::Element* buffer, uint64_t nBits) {
+    fproof.proof.fri.setPol(buffer, (1 << nBits));
     return;
 }
 

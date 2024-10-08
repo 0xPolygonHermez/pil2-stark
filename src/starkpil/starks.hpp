@@ -88,10 +88,10 @@ public:
 
     void calculateXDivXSub(Goldilocks::Element *xiChallenge, Goldilocks::Element *xDivXSub);
 
-    void computeFRIFolding(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *challenge);
-    void computeFRIMerkelize(uint64_t step, Goldilocks::Element *buffer, FRIProof<ElementType> &fproof);
-    void computeQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries);
-    void computeFRIQueries(FRIProof<ElementType> &fproof, Goldilocks::Element *buffer, uint64_t* friQueries);
+    void computeFRIFolding(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *challenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits);
+    void computeFRIMerkelize(uint64_t step, Goldilocks::Element *buffer, FRIProof<ElementType> &fproof, uint64_t currentBits, uint64_t nextBits);
+    void computeQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries, uint64_t nQueries, uint64_t nTrees);
+    void computeFRIQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits);
 
     void calculateHash(ElementType* hash, Goldilocks::Element* buffer, uint64_t nElements);
 

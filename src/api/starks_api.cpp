@@ -304,33 +304,33 @@ void *get_fri_pol(void *pSetupCtx, void *buffer)
     return &pols[setupCtx.starkInfo.mapOffsets[std::make_pair("f", true)]];
 }
 
-    void compute_fri_merkelize(void *pStarks, uint64_t step, void *pProof, void *buffer, void *pChallenge);
-    void compute_queries(void *pStarks, void *pProof, uint64_t* friQueries);
-    void compute_fri_queries(void *pStarks, void *pProof, void *buffer, uint64_t* friQueries);
-
-void compute_fri_folding(void *pStarks, uint64_t step, void *buffer, void *pChallenge)
+void compute_fri_folding(void *pStarks, uint64_t step, void *buffer, void *pChallenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits)
 {
     Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->computeFRIFolding(step, (Goldilocks::Element *)buffer, (Goldilocks::Element *)pChallenge);
+    starks->computeFRIFolding(step, (Goldilocks::Element *)buffer, (Goldilocks::Element *)pChallenge, nBitsExt, prevBits, currentBits);
 }
 
-void compute_fri_merkelize(void *pStarks, void *pProof, uint64_t step, void *buffer)
+void compute_fri_merkelize(void *pStarks, void *pProof, uint64_t step, void *buffer, uint64_t currentBits, uint64_t nextBits)
 {
     Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->computeFRIMerkelize(step, (Goldilocks::Element *)buffer, *(FRIProof<Goldilocks::Element> *)pProof);
+    starks->computeFRIMerkelize(step, (Goldilocks::Element *)buffer, *(FRIProof<Goldilocks::Element> *)pProof, currentBits, nextBits);
 }
 
-void compute_queries(void *pStarks, void *pProof, uint64_t *friQueries)
+void compute_queries(void *pStarks, void *pProof, uint64_t *friQueries, uint64_t nQueries, uint64_t nTrees)
 {
     Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->computeQueries(*(FRIProof<Goldilocks::Element> *)pProof, friQueries);
+    starks->computeQueries(*(FRIProof<Goldilocks::Element> *)pProof, friQueries, nQueries, nTrees);
 }
 
 
-void compute_fri_queries(void *pStarks, void *pProof, void *pBuffer, uint64_t *friQueries)
+void compute_fri_queries(void *pStarks, void *pProof, uint64_t *friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits)
 {
     Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->computeFRIQueries(*(FRIProof<Goldilocks::Element> *)pProof, (Goldilocks::Element *)pBuffer, friQueries);
+    starks->computeFRIQueries(*(FRIProof<Goldilocks::Element> *)pProof, friQueries, nQueries, step, currentBits);
+}
+
+void set_fri_final_pol(void *pProof, void *buffer, uint64_t nBits) {
+    FRI<Goldilocks::Element>::setFinalPol(*(FRIProof<Goldilocks::Element> *)pProof, (Goldilocks::Element *)buffer, nBits);
 }
 
 void calculate_hash(void *pStarks, void *pHhash, void *pBuffer, uint64_t nElements)

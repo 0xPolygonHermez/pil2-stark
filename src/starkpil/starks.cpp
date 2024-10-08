@@ -180,28 +180,28 @@ void Starks<ElementType>::calculateXDivXSub(Goldilocks::Element *xiChallenge, Go
 }
 
 template <typename ElementType>
-void Starks<ElementType>::computeFRIFolding(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *challenge)
+void Starks<ElementType>::computeFRIFolding(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *challenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits)
 {
-    FRI<ElementType>::fold(step, buffer, challenge, setupCtx.starkInfo);
+    FRI<ElementType>::fold(step, buffer, challenge, nBitsExt, prevBits, currentBits);
 }
 
 template <typename ElementType>
-void Starks<ElementType>::computeFRIMerkelize(uint64_t step, Goldilocks::Element *buffer, FRIProof<ElementType> &fproof)
+void Starks<ElementType>::computeFRIMerkelize(uint64_t step, Goldilocks::Element *buffer, FRIProof<ElementType> &fproof, uint64_t currentBits, uint64_t nextBits)
 {
-    FRI<ElementType>::merkelize(step, fproof, buffer, setupCtx.starkInfo, treesFRI[step]);
+    FRI<ElementType>::merkelize(step, fproof, buffer, treesFRI[step], currentBits, nextBits);
 }
 
 template <typename ElementType>
-void Starks<ElementType>::computeQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries)
+void Starks<ElementType>::computeQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries, uint64_t nQueries, uint64_t nTrees)
 {
-    FRI<ElementType>::proveQueries(friQueries, fproof, treesGL, setupCtx.starkInfo);
+    FRI<ElementType>::proveQueries(friQueries, nQueries, fproof, treesGL, nTrees);
 }
 
 
 template <typename ElementType>
-void Starks<ElementType>::computeFRIQueries(FRIProof<ElementType> &fproof, Goldilocks::Element* buffer, uint64_t *friQueries)
+void Starks<ElementType>::computeFRIQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits)
 {
-    FRI<ElementType>::proveFRIQueries(friQueries, buffer, fproof, treesFRI, setupCtx.starkInfo);
+    FRI<ElementType>::proveFRIQueries(friQueries, nQueries, step, currentBits, fproof, treesFRI[step - 1]);
 }
 
 

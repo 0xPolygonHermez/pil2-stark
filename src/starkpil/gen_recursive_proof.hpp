@@ -246,12 +246,15 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     Goldilocks::Element *friPol = &pAddress[setupCtx.starkInfo.mapOffsets[std::make_pair("f", true)]];
     
     TimerStart(STARK_FRI_FOLDING);
+    uint64_t nBitsExt =  setupCtx.starkInfo.starkStruct.steps[0].nBits;
     for (uint64_t step = 0; step < setupCtx.starkInfo.starkStruct.steps.size(); step++)
-    {
-        starks.computeFRIFolding(step, friPol, challenge);
+    {   
+        uint64_t currentBits = setupCtx.starkInfo.starkStruct.steps[step].nBits;
+        uint64_t prevBits = step == 0 ? currentBits : setupCtx.starkInfo.starkStruct.steps[step - 1].nBits;
+        starks.computeFRIFolding(step, friPol, challenge, nBitsExt, prevBits, currentBits);
         if (step < setupCtx.starkInfo.starkStruct.steps.size() - 1)
         {
-            starks.computeFRIMerkelize(step, friPol, proof);
+            starks.computeFRIMerkelize(step, friPol, proof, currentBits, setupCtx.starkInfo.starkStruct.steps[step + 1].nBits);
             starks.addTranscript(transcript, &proof.proof.fri.treesFRI[step].root[0], nFieldElements);
         }
         else
@@ -276,8 +279,12 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     starks.addTranscriptGL(transcriptPermutation, challenge, FIELD_EXTENSION);
     transcriptPermutation.getPermutations(friQueries, setupCtx.starkInfo.starkStruct.nQueries, setupCtx.starkInfo.starkStruct.steps[0].nBits);
 
-    starks.computeQueries(proof, friQueries);
-    starks.computeFRIQueries(proof, friPol, friQueries);
+    starks.computeQueries(proof, friQueries, setupCtx.starkInfo.starkStruct.nQueries, setupCtx.starkInfo.nStages + 2);
+    for(uint64_t step = 1; step < setupCtx.starkInfo.starkStruct.steps.size(); ++step) {
+        starks.computeFRIQueries(proof, friQueries, setupCtx.starkInfo.starkStruct.nQueries, step, setupCtx.starkInfo.starkStruct.steps[step].nBits);
+    }
+
+    FRI<ElementType>::setFinalPol(proof, friPol, setupCtx.starkInfo.starkStruct.steps[setupCtx.starkInfo.starkStruct.steps.size() - 1].nBits);
     TimerStopAndLog(STARK_FRI_QUERIES);
 
     TimerStopAndLog(STARK_STEP_FRI);
