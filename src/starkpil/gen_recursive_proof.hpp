@@ -8,8 +8,6 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
 
     using TranscriptType = std::conditional_t<std::is_same<ElementType, Goldilocks::Element>::value, TranscriptGL, TranscriptBN128>;
     
-    using MerkleTreeType = std::conditional_t<std::is_same<ElementType, Goldilocks::Element>::value, MerkleTreeGL, MerkleTreeBN128>;
-
     Starks<ElementType> starks(setupCtx);
 
 #ifdef __AVX512__
@@ -45,31 +43,13 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
         commitsCalculated[i] = true;
     }
 
-    MerkleTreeType **treesGL = new MerkleTreeType*[setupCtx.starkInfo.nStages + 2];
-    MerkleTreeType **treesFRI = new MerkleTreeType*[setupCtx.starkInfo.starkStruct.steps.size() - 1];
-
-    treesGL[setupCtx.starkInfo.nStages + 1] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, (Goldilocks::Element *)setupCtx.constPols.pConstTreeAddress);
-    for (uint64_t i = 0; i < setupCtx.starkInfo.nStages + 1; i++)
-    {
-        std::string section = "cm" + to_string(i + 1);
-        uint64_t nCols = setupCtx.starkInfo.mapSectionsN[section];
-        treesGL[i] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, 1 << setupCtx.starkInfo.starkStruct.nBitsExt, nCols, NULL, false);
-    }
-        
-    for(uint64_t step = 0; step < setupCtx.starkInfo.starkStruct.steps.size() - 1; ++step) {
-        uint64_t nGroups = 1 << setupCtx.starkInfo.starkStruct.steps[step + 1].nBits;
-        uint64_t groupSize = (1 << setupCtx.starkInfo.starkStruct.steps[step].nBits) / nGroups;
-
-        treesFRI[step] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, nGroups, groupSize * FIELD_EXTENSION, NULL);
-    }
-
     //--------------------------------
     // 0.- Add const root and publics to transcript
     //--------------------------------
 
     TimerStart(STARK_STEP_0);
     ElementType verkey[nFieldElements];
-    treesGL[setupCtx.starkInfo.nStages + 1]->getRoot(verkey);
+    starks.treesGL[setupCtx.starkInfo.nStages + 1]->getRoot(verkey);
     starks.addTranscript(transcript, &verkey[0], nFieldElements);
 
     if(setupCtx.starkInfo.nPublics > 0) {
@@ -251,10 +231,10 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     {   
         uint64_t currentBits = setupCtx.starkInfo.starkStruct.steps[step].nBits;
         uint64_t prevBits = step == 0 ? currentBits : setupCtx.starkInfo.starkStruct.steps[step - 1].nBits;
-        starks.computeFRIFolding(step, friPol, challenge, nBitsExt, prevBits, currentBits);
+        FRI<Goldilocks::Element>::fold(step, friPol, challenge, nBitsExt, prevBits, currentBits);
         if (step < setupCtx.starkInfo.starkStruct.steps.size() - 1)
         {
-            starks.computeFRIMerkelize(step, friPol, proof, currentBits, setupCtx.starkInfo.starkStruct.steps[step + 1].nBits);
+            FRI<Goldilocks::Element>::merkelize(step, proof, friPol, starks.treesFRI[step], currentBits, setupCtx.starkInfo.starkStruct.steps[step + 1].nBits);
             starks.addTranscript(transcript, &proof.proof.fri.treesFRI[step].root[0], nFieldElements);
         }
         else
@@ -279,9 +259,9 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     starks.addTranscriptGL(transcriptPermutation, challenge, FIELD_EXTENSION);
     transcriptPermutation.getPermutations(friQueries, setupCtx.starkInfo.starkStruct.nQueries, setupCtx.starkInfo.starkStruct.steps[0].nBits);
 
-    starks.computeQueries(proof, friQueries, setupCtx.starkInfo.starkStruct.nQueries, setupCtx.starkInfo.nStages + 2);
+    FRI<Goldilocks::Element>::proveQueries(friQueries, setupCtx.starkInfo.starkStruct.nQueries, proof, starks.treesGL, setupCtx.starkInfo.nStages + 2);
     for(uint64_t step = 1; step < setupCtx.starkInfo.starkStruct.steps.size(); ++step) {
-        starks.computeFRIQueries(proof, friQueries, setupCtx.starkInfo.starkStruct.nQueries, step, setupCtx.starkInfo.starkStruct.steps[step].nBits);
+        FRI<Goldilocks::Element>::proveFRIQueries(friQueries, setupCtx.starkInfo.starkStruct.nQueries, step, setupCtx.starkInfo.starkStruct.steps[step].nBits, proof, starks.treesFRI[step - 1]);
     }
 
     FRI<ElementType>::setFinalPol(proof, friPol, setupCtx.starkInfo.starkStruct.steps[setupCtx.starkInfo.starkStruct.steps.size() - 1].nBits);
@@ -292,18 +272,6 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     delete challenges;
     delete evals;
     delete subproofValues;
-
-    for (uint i = 0; i < setupCtx.starkInfo.nStages + 2; i++)
-    {
-        delete treesGL[i];
-    }
-    delete[] treesGL;
-
-    for (uint64_t i = 0; i < setupCtx.starkInfo.starkStruct.steps.size() - 1; i++)
-    {
-        delete treesFRI[i];
-    }
-    delete[] treesFRI;
         
     TimerStart(PROOF_2_ZKIN);
     nlohmann::ordered_json jProof = proof.proof.proof2json();

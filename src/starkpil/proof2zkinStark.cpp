@@ -27,13 +27,13 @@ ordered_json proof2zkinStark(ordered_json &proof, StarkInfo &starkInfo)
 
     for (uint64_t i = 0; i < friSteps; i++)
     {
-        zkinOut["s" + std::to_string(i) + "_root"] = proof["fri"][i]["root"];
-        zkinOut["s" + std::to_string(i) + "_vals"] = ordered_json::array();
-        zkinOut["s" + std::to_string(i) + "_siblings"] = ordered_json::array();
+        zkinOut["s" + std::to_string(i + 1) + "_root"] = proof["fri"][i]["root"];
+        zkinOut["s" + std::to_string(i + 1) + "_vals"] = ordered_json::array();
+        zkinOut["s" + std::to_string(i + 1) + "_siblings"] = ordered_json::array();
         for (uint q = 0; q < nQueries; q++)
         {
-            zkinOut["s" + std::to_string(i) + "_vals"][q] = proof["fri"][i]["polQueries"][q][0];
-            zkinOut["s" + std::to_string(i) + "_siblings"][q] = proof["fri"][i]["polQueries"][q][1];
+            zkinOut["s" + std::to_string(i + 1) + "_vals"][q] = proof["fri"][i]["polQueries"][q][0];
+            zkinOut["s" + std::to_string(i + 1) + "_siblings"][q] = proof["fri"][i]["polQueries"][q][1];
         }
     }
   

@@ -28,14 +28,13 @@ public:
     using TranscriptType = std::conditional_t<std::is_same<ElementType, Goldilocks::Element>::value, TranscriptGL, TranscriptBN128>;
     using MerkleTreeType = std::conditional_t<std::is_same<ElementType, Goldilocks::Element>::value, MerkleTreeGL, MerkleTreeBN128>;
 
-private:
     MerkleTreeType **treesGL;
     MerkleTreeType **treesFRI;
 
-    bool multiFri;
+    bool multiFRI;
 
 public:
-    Starks(SetupCtx& setupCtx_, bool multiFri_ = false) : setupCtx(setupCtx_), multiFri(multiFri_)                                                    
+    Starks(SetupCtx& setupCtx_, bool multiFRI_ = false) : setupCtx(setupCtx_), multiFRI(multiFRI_)                                                    
     {
         treesGL = new MerkleTreeType*[setupCtx.starkInfo.nStages + 2];
         treesGL[setupCtx.starkInfo.nStages + 1] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, (Goldilocks::Element *)setupCtx.constPols.pConstTreeAddress);
@@ -46,7 +45,7 @@ public:
             treesGL[i] = new MerkleTreeType(setupCtx.starkInfo.starkStruct.merkleTreeArity, setupCtx.starkInfo.starkStruct.merkleTreeCustom, 1 << setupCtx.starkInfo.starkStruct.nBitsExt, nCols, NULL, false);
         }
 
-        if(!multiFri_) {
+        if(!multiFRI_) {
             treesFRI = new MerkleTreeType*[setupCtx.starkInfo.starkStruct.steps.size() - 1];
             for(uint64_t step = 0; step < setupCtx.starkInfo.starkStruct.steps.size() - 1; ++step) {
                 uint64_t nGroups = 1 << setupCtx.starkInfo.starkStruct.steps[step + 1].nBits;
@@ -64,7 +63,7 @@ public:
         }
         delete[] treesGL;
 
-        if(!multiFri) {
+        if(!multiFRI) {
             for (uint64_t i = 0; i < setupCtx.starkInfo.starkStruct.steps.size() - 1; i++)
             {
                 delete treesFRI[i];
@@ -87,11 +86,6 @@ public:
     void computeEvals(Goldilocks::Element *buffer, Goldilocks::Element *LEv, Goldilocks::Element *evals, FRIProof<ElementType> &proof);
 
     void calculateXDivXSub(Goldilocks::Element *xiChallenge, Goldilocks::Element *xDivXSub);
-
-    void computeFRIFolding(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *challenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits);
-    void computeFRIMerkelize(uint64_t step, Goldilocks::Element *buffer, FRIProof<ElementType> &fproof, uint64_t currentBits, uint64_t nextBits);
-    void computeQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries, uint64_t nQueries, uint64_t nTrees);
-    void computeFRIQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits);
 
     void calculateHash(ElementType* hash, Goldilocks::Element* buffer, uint64_t nElements);
 

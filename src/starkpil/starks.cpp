@@ -180,32 +180,6 @@ void Starks<ElementType>::calculateXDivXSub(Goldilocks::Element *xiChallenge, Go
 }
 
 template <typename ElementType>
-void Starks<ElementType>::computeFRIFolding(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *challenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits)
-{
-    FRI<ElementType>::fold(step, buffer, challenge, nBitsExt, prevBits, currentBits);
-}
-
-template <typename ElementType>
-void Starks<ElementType>::computeFRIMerkelize(uint64_t step, Goldilocks::Element *buffer, FRIProof<ElementType> &fproof, uint64_t currentBits, uint64_t nextBits)
-{
-    FRI<ElementType>::merkelize(step, fproof, buffer, treesFRI[step], currentBits, nextBits);
-}
-
-template <typename ElementType>
-void Starks<ElementType>::computeQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries, uint64_t nQueries, uint64_t nTrees)
-{
-    FRI<ElementType>::proveQueries(friQueries, nQueries, fproof, treesGL, nTrees);
-}
-
-
-template <typename ElementType>
-void Starks<ElementType>::computeFRIQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits)
-{
-    FRI<ElementType>::proveFRIQueries(friQueries, nQueries, step, currentBits, fproof, treesFRI[step - 1]);
-}
-
-
-template <typename ElementType>
 void Starks<ElementType>::evmap(Goldilocks::Element *buffer, Goldilocks::Element *evals, Goldilocks::Element *LEv)
 {
     uint64_t extendBits = setupCtx.starkInfo.starkStruct.nBitsExt - setupCtx.starkInfo.starkStruct.nBits;

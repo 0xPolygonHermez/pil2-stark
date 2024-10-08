@@ -228,9 +228,9 @@ uint64_t set_hint_field(void *pSetupCtx, void* buffer, void* subproofValues, voi
 // Starks
 // ========================================================================================
 
-void *starks_new(void *pSetupCtx)
+void *starks_new(void *pSetupCtx, bool multiFRI)
 {
-    return new Starks<Goldilocks::Element>(*(SetupCtx *)pSetupCtx);
+    return new Starks<Goldilocks::Element>(*(SetupCtx *)pSetupCtx, multiFRI);
 }
 
 void starks_free(void *pStarks)
@@ -304,39 +304,50 @@ void *get_fri_pol(void *pSetupCtx, void *buffer)
     return &pols[setupCtx.starkInfo.mapOffsets[std::make_pair("f", true)]];
 }
 
-void compute_fri_folding(void *pStarks, uint64_t step, void *buffer, void *pChallenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits)
+void calculate_hash(void *pStarks, void *pHhash, void *pBuffer, uint64_t nElements)
 {
     Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->computeFRIFolding(step, (Goldilocks::Element *)buffer, (Goldilocks::Element *)pChallenge, nBitsExt, prevBits, currentBits);
+    starks->calculateHash((Goldilocks::Element *)pHhash, (Goldilocks::Element *)pBuffer, nElements);
 }
 
-void compute_fri_merkelize(void *pStarks, void *pProof, uint64_t step, void *buffer, uint64_t currentBits, uint64_t nextBits)
+// MerkleTree
+// =================================================================================
+void *merkle_tree_new(uint64_t height, uint64_t width, uint64_t arity, bool custom) {
+    MerkleTreeGL * mt =  new MerkleTreeGL(arity, custom, height, width, NULL);
+    return mt;
+}
+
+void merkle_tree_free(void *pMerkleTree) {
+    MerkleTreeGL *merkleTree = (MerkleTreeGL *)pMerkleTree;
+    delete merkleTree;
+}
+
+// FRI
+// =================================================================================
+
+void compute_fri_folding(uint64_t step, void *buffer, void *pChallenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits)
 {
-    Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->computeFRIMerkelize(step, (Goldilocks::Element *)buffer, *(FRIProof<Goldilocks::Element> *)pProof, currentBits, nextBits);
+    FRI<Goldilocks::Element>::fold(step, (Goldilocks::Element *)buffer, (Goldilocks::Element *)pChallenge, nBitsExt, prevBits, currentBits);
+}
+
+void compute_fri_merkelize(void *tree_fri, void *pProof, uint64_t step, void *buffer, uint64_t currentBits, uint64_t nextBits)
+{
+    FRI<Goldilocks::Element>::merkelize(step, *(FRIProof<Goldilocks::Element> *)pProof, (Goldilocks::Element *)buffer, (MerkleTreeGL *)tree_fri, currentBits, nextBits);
 }
 
 void compute_queries(void *pStarks, void *pProof, uint64_t *friQueries, uint64_t nQueries, uint64_t nTrees)
 {
     Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->computeQueries(*(FRIProof<Goldilocks::Element> *)pProof, friQueries, nQueries, nTrees);
+    FRI<Goldilocks::Element>::proveQueries(friQueries, nQueries, *(FRIProof<Goldilocks::Element> *)pProof, starks->treesGL, nTrees);
 }
 
-
-void compute_fri_queries(void *pStarks, void *pProof, uint64_t *friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits)
+void compute_fri_queries(void *tree_fri, void *pProof, uint64_t *friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits)
 {
-    Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->computeFRIQueries(*(FRIProof<Goldilocks::Element> *)pProof, friQueries, nQueries, step, currentBits);
+    FRI<Goldilocks::Element>::proveFRIQueries(friQueries, nQueries, step, currentBits, *(FRIProof<Goldilocks::Element> *)pProof, (MerkleTreeGL *)tree_fri);
 }
 
 void set_fri_final_pol(void *pProof, void *buffer, uint64_t nBits) {
     FRI<Goldilocks::Element>::setFinalPol(*(FRIProof<Goldilocks::Element> *)pProof, (Goldilocks::Element *)buffer, nBits);
-}
-
-void calculate_hash(void *pStarks, void *pHhash, void *pBuffer, uint64_t nElements)
-{
-    Starks<Goldilocks::Element> *starks = (Starks<Goldilocks::Element> *)pStarks;
-    starks->calculateHash((Goldilocks::Element *)pHhash, (Goldilocks::Element *)pBuffer, nElements);
 }
 
 // Transcript
