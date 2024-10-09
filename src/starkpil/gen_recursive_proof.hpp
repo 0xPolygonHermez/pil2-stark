@@ -119,7 +119,7 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     auto gprodField = std::find_if(gprod_hint.fields.begin(), gprod_hint.fields.end(), [](const HintField& hintField) {
         return hintField.name == "reference";
     });
-    
+
     expressionsCtx.calculateExpression(params, den, denField->values[0].id, true);
     expressionsCtx.calculateExpression(params, num, numField->values[0].id);
 
@@ -151,7 +151,9 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
             exit(-1);
         }
     }
+    TimerStart(CALCULATE_IM_POLS);
     starks.calculateImPolsExpressions(2, pAddress, publicInputs, challenges, subproofValues, evals);
+    TimerStopAndLog(CALCULATE_IM_POLS);
     for(uint64_t i = 0; i < setupCtx.starkInfo.cmPolsMap.size(); i++) {
         if(setupCtx.starkInfo.cmPolsMap[i].imPol && setupCtx.starkInfo.cmPolsMap[i].stage == 2) {
             commitsCalculated[i] = true;
