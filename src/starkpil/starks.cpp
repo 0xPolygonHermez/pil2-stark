@@ -180,19 +180,6 @@ void Starks<ElementType>::calculateXDivXSub(Goldilocks::Element *xiChallenge, Go
 }
 
 template <typename ElementType>
-void Starks<ElementType>::computeFRIFolding(uint64_t step, FRIProof<ElementType> &fproof, Goldilocks::Element *buffer, Goldilocks::Element *challenge)
-{
-    FRI<ElementType>::fold(step, fproof, &buffer[setupCtx.starkInfo.mapOffsets[std::make_pair("f", true)]], challenge, setupCtx.starkInfo, treesFRI);
-}
-
-template <typename ElementType>
-void Starks<ElementType>::computeFRIQueries(FRIProof<ElementType> &fproof, uint64_t *friQueries)
-{
-    FRI<ElementType>::proveQueries(friQueries, fproof, treesGL, treesFRI, setupCtx.starkInfo);
-}
-
-
-template <typename ElementType>
 void Starks<ElementType>::evmap(Goldilocks::Element *buffer, Goldilocks::Element *evals, Goldilocks::Element *LEv)
 {
     uint64_t extendBits = setupCtx.starkInfo.starkStruct.nBitsExt - setupCtx.starkInfo.starkStruct.nBits;

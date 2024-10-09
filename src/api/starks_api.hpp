@@ -6,7 +6,6 @@
     // ========================================================================================
     void save_challenges(void *pChallenges, char* globalInfoFile, char *fileDir);
     void save_publics(unsigned long numPublicInputs, void *pPublicInputs, char *fileDir);
-    void save_proof(uint64_t proof_id, void *pStarkInfo, void *pFriProof, char *fileDir);
 
     // FRIProof
     // ========================================================================================
@@ -67,11 +66,22 @@
     void compute_lev(void *pStarks, void *xiChallenge, void* LEv);
     void compute_evals(void *pStarks, void *buffer, void *LEv, void *evals, void *pProof);
 
-    void compute_fri_folding(void *pStarks, void *pProof, uint64_t step, void *buffer, void *pChallenge);
-    void compute_fri_queries(void *pStarks, void *pProof, uint64_t* friQueries);
-
     void calculate_hash(void *pStarks, void *pHhash, void *pBuffer, uint64_t nElements);
     
+    // MerkleTree
+    // =================================================================================
+    void *merkle_tree_new(uint64_t height, uint64_t width, uint64_t arity, bool custom);
+    void merkle_tree_free(void *pMerkleTree);
+
+    // FRI 
+    // =================================================================================
+
+    void compute_fri_folding(uint64_t step, void *buffer, void *pChallenge, uint64_t nBitsExt, uint64_t prevBits, uint64_t currentBits);
+    void compute_fri_merkelize(void *pStarks, void *pProof, uint64_t step, void *buffer, uint64_t currentBits, uint64_t nextBits);
+    void compute_queries(void *pStarks, void *pProof, uint64_t *friQueries, uint64_t nQueries, uint64_t nTrees);
+    void compute_fri_queries(void *pStarks, void *pProof, uint64_t *friQueries, uint64_t nQueries, uint64_t step, uint64_t currentBits);
+    void set_fri_final_pol(void *pProof, void *buffer, uint64_t nBits);
+
     // Transcript
     // =================================================================================
     void *transcript_new(uint32_t elementType, uint64_t arity, bool custom);
