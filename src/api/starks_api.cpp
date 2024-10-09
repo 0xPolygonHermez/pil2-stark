@@ -44,18 +44,6 @@ void save_publics(unsigned long numPublicInputs, void *pPublicInputs, char *file
 
 
 
-void save_proof(uint64_t proof_id, void *pStarkInfo, void *pFriProof, char *fileDir)
-{
-    auto friProof = (FRIProof<Goldilocks::Element> *)pFriProof;
-
-    nlohmann::ordered_json jProof = friProof->proof.proof2json();
-
-    // Save proof to file
-    std::filesystem::create_directory(string(fileDir) + "/proofs");
-    json2file(jProof, string(fileDir) + "/proofs/proof_" + to_string(proof_id) + ".json");
-}
-
-
 void *fri_proof_new(void *pSetupCtx)
 {
     SetupCtx setupCtx = *(SetupCtx *)pSetupCtx;
@@ -103,7 +91,13 @@ void *fri_proof_get_zkinproof(uint64_t proof_id, void *pFriProof, void* pPublics
 
     // Save output to file
     if(!string(fileDir).empty()) {
-        std::filesystem::create_directory(string(fileDir) + "/zkin");
+        if (!std::filesystem::exists(string(fileDir) + "/zkin")) {
+            std::filesystem::create_directory(string(fileDir) + "/zkin");
+        }
+        if (!std::filesystem::exists(string(fileDir) + "/proofs")) {
+            std::filesystem::create_directory(string(fileDir) + "/proofs");
+        }
+        json2file(jProof, string(fileDir) + "/proofs/proof_" + to_string(proof_id) + ".json");
         json2file(zkin, string(fileDir) + "/zkin/proof_" + to_string(proof_id) + "_zkin.json");
     }
 

@@ -6,7 +6,6 @@
     // ========================================================================================
     void save_challenges(void *pChallenges, char* globalInfoFile, char *fileDir);
     void save_publics(unsigned long numPublicInputs, void *pPublicInputs, char *fileDir);
-    void save_proof(uint64_t proof_id, void *pStarkInfo, void *pFriProof, char *fileDir);
 
     // FRIProof
     // ========================================================================================
