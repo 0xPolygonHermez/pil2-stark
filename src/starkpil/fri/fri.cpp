@@ -204,3 +204,36 @@ void FRI<ElementType>::getTransposed(Goldilocks::Element *aux, Goldilocks::Eleme
         }
     }
 }
+
+
+template <typename ElementType>
+void FRI<ElementType>::verify_fold(Goldilocks::Element* value, uint64_t step, uint64_t nBitsExt, uint64_t currentBits, uint64_t prevBits, Goldilocks::Element *challenge, uint64_t idx, std::vector<std::vector<Goldilocks::Element>> v) {
+    Goldilocks::Element shift = Goldilocks::shift();
+    
+    for (uint64_t j = 0; j < nBitsExt - prevBits; j++) {
+        shift = shift * shift;
+    }
+    
+    uint64_t nX = (1 << prevBits) / (1 << currentBits);
+
+    Goldilocks::Element ppar_c[nX * FIELD_EXTENSION];
+    
+    uint64_t c = 0;
+    for(uint64_t i = 0; i < v.size(); ++i) {
+        for(uint64_t j = 0; j < v[i].size(); ++j) {
+            ppar_c[c++] = v[i][j];
+        }
+    }
+
+    assert(c == nX * FIELD_EXTENSION);
+
+    NTT_Goldilocks ntt(nX, 1);
+
+    ntt.INTT(ppar_c, ppar_c, nX, FIELD_EXTENSION);
+
+    Goldilocks::Element sinv = Goldilocks::inv(Goldilocks::mul(shift, Goldilocks::exp(Goldilocks::w(prevBits), idx)));
+    
+    Goldilocks::Element aux[3];
+    Goldilocks3::mul((Goldilocks3::Element &)aux[0], (Goldilocks3::Element &)challenge[0], sinv);
+    evalPol(value, 0, nX, ppar_c, aux);
+}

@@ -274,8 +274,13 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
     delete challenges;
     delete evals;
     delete subproofValues;
-        
-    TimerStart(PROOF_2_ZKIN);
+    
+    TimerStart(STARK_VERIFY);
+    bool res = starkVerify(proof, setupCtx.starkInfo, setupCtx.expressionsBin, verkey, publicInputs, nullptr);
+    if(!res) {
+        zklog.error("STARK VERIFICATION FAILED");
+        exitProcess();
+    }
     nlohmann::ordered_json jProof = proof.proof.proof2json();
     nlohmann::ordered_json zkin = proof2zkinStark(jProof, setupCtx.starkInfo);
 
