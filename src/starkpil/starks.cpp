@@ -276,7 +276,17 @@ void Starks<ElementType>::ffi_treesGL_get_root(uint64_t index, ElementType *dst)
 
 template <typename ElementType>
 void Starks<ElementType>::calculateImPolsExpressions(uint64_t step, Goldilocks::Element *buffer, Goldilocks::Element *publicInputs, Goldilocks::Element *challenges, Goldilocks::Element *subproofValues, Goldilocks::Element *evals) {
-    if(!setupCtx.expressionsBin.imPolsInfo[step - 1].nOps) return;
+    std::vector<Dest> dests;
+    for(uint64_t i = 0; i < setupCtx.starkInfo.cmPolsMap.size(); i++) {
+        if(setupCtx.starkInfo.cmPolsMap[i].imPol && setupCtx.starkInfo.cmPolsMap[i].stage == step) {
+            Dest destStruct(&buffer[setupCtx.starkInfo.mapOffsets[std::make_pair("cm" + to_string(step), false)] + setupCtx.starkInfo.cmPolsMap[i].stagePos]);
+            destStruct.addParams(setupCtx.expressionsBin.expressionsInfo[setupCtx.starkInfo.cmPolsMap[i].expId], false, setupCtx.starkInfo.mapSectionsN["cm" + to_string(step)]);
+            
+            dests.push_back(destStruct);
+        }
+    }
+
+    if(dests.size() == 0) return;
 
 #ifdef __AVX512__
     ExpressionsAvx512 expressionsCtx(setupCtx);
@@ -286,29 +296,17 @@ void Starks<ElementType>::calculateImPolsExpressions(uint64_t step, Goldilocks::
     ExpressionsPack expressionsCtx(setupCtx);
 #endif
 
-    StepsParams params {
-        pols : buffer,
-        publicInputs,
-        challenges,
-        subproofValues,
-        evals,
-        xDivXSub: nullptr,
-    };
+        StepsParams params {
+            pols : buffer,
+            publicInputs,
+            challenges,
+            subproofValues,
+            evals,
+            xDivXSub: nullptr,
+        };
 
-    expressionsCtx.calculateExpressions(params, nullptr, setupCtx.expressionsBin.expressionsBinArgsImPols, setupCtx.expressionsBin.imPolsInfo[step - 1], false, false, true);
 
-    // uint64_t N = 1 << setupCtx.starkInfo.starkStruct.nBits;
-    // Goldilocks::Element* pAddr = &params.pols[setupCtx.starkInfo.mapOffsets[std::make_pair("q", true)]];
-    // for(uint64_t i = 0; i < setupCtx.starkInfo.cmPolsMap.size(); i++) {
-    //     if(setupCtx.starkInfo.cmPolsMap[i].imPol && setupCtx.starkInfo.cmPolsMap[i].stage == step) {
-    //         expressionsCtx.calculateExpression(params, pAddr, setupCtx.starkInfo.cmPolsMap[i].expId);
-    //         Goldilocks::Element* imAddr = &params.pols[setupCtx.starkInfo.mapOffsets[std::make_pair("cm" + to_string(step), false)] + setupCtx.starkInfo.cmPolsMap[i].stagePos];
-    //     #pragma omp parallel
-    //         for(uint64_t j = 0; j < N; ++j) {
-    //             std::memcpy(&imAddr[j*setupCtx.starkInfo.mapSectionsN["cm" + to_string(step)]], &pAddr[j*setupCtx.starkInfo.cmPolsMap[i].dim], setupCtx.starkInfo.cmPolsMap[i].dim * sizeof(Goldilocks::Element));
-    //         }
-    //     }
-    // }
+    expressionsCtx.calculateExpressions(params, setupCtx.expressionsBin.expressionsBinArgsExpressions, dests, false);
 }
 
 template <typename ElementType>

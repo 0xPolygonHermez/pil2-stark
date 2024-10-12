@@ -100,9 +100,15 @@ void *genRecursiveProof(SetupCtx& setupCtx, Goldilocks::Element *pAddress, Goldi
         return hintField.name == "reference";
     });
 
-    expressionsCtx.calculateExpression(params, den, denField->values[0].id, true);
-    expressionsCtx.calculateExpression(params, num, numField->values[0].id);
 
+    Dest numStruct(num);
+    numStruct.addParams(setupCtx.expressionsBin.expressionsInfo[numField->values[0].id]);
+    Dest denStruct(den);
+    denStruct.addParams(setupCtx.expressionsBin.expressionsInfo[denField->values[0].id], true);
+    std::vector<Dest> dests = {numStruct, denStruct};
+
+    expressionsCtx.calculateExpressions(params, setupCtx.expressionsBin.expressionsBinArgsExpressions, dests, false);
+    
 
     Goldilocks3::copy((Goldilocks3::Element *)&gprod[0], &Goldilocks3::one());
     for(uint64_t i = 1; i < N; ++i) {

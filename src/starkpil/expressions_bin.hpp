@@ -17,10 +17,9 @@
 #include <immintrin.h>
 #include <cassert>
 
-const int BINARY_IMPOLS_SECTION = 2;
-const int BINARY_EXPRESSIONS_SECTION = 3;
-const int BINARY_CONSTRAINTS_SECTION = 4;
-const int BINARY_HINTS_SECTION = 5;
+const int BINARY_EXPRESSIONS_SECTION = 2;
+const int BINARY_CONSTRAINTS_SECTION = 3;
+const int BINARY_HINTS_SECTION = 4;
 
 const int GLOBAL_CONSTRAINTS_SECTION = 2;
 const int GLOBAL_HINTS_SECTION = 3;
@@ -100,26 +99,13 @@ public:
 
     std::vector<ParserParams> constraintsInfoDebug;
 
-    std::vector<ParserParams> imPolsInfo;
-
     std::vector<Hint> hints;
 
     ParserArgs expressionsBinArgsConstraints;
-
-    ParserArgs expressionsBinArgsImPols;
     
     ParserArgs expressionsBinArgsExpressions;
 
     ~ExpressionsBin() {
-        if (expressionsBinArgsImPols.ops) delete[] expressionsBinArgsImPols.ops;
-        if (expressionsBinArgsImPols.args) delete[] expressionsBinArgsImPols.args;
-        if (expressionsBinArgsImPols.numbers) delete[] expressionsBinArgsImPols.numbers;
-        if (expressionsBinArgsImPols.constPolsIds) delete[] expressionsBinArgsImPols.constPolsIds;
-        if (expressionsBinArgsImPols.cmPolsIds) delete[] expressionsBinArgsImPols.cmPolsIds;
-        if (expressionsBinArgsImPols.challengesIds) delete[] expressionsBinArgsImPols.challengesIds;
-        if (expressionsBinArgsImPols.publicsIds) delete[] expressionsBinArgsImPols.publicsIds;
-        if (expressionsBinArgsImPols.subproofValuesIds) delete[] expressionsBinArgsImPols.subproofValuesIds;
-
         if (expressionsBinArgsExpressions.ops) delete[] expressionsBinArgsExpressions.ops;
         if (expressionsBinArgsExpressions.args) delete[] expressionsBinArgsExpressions.args;
         if (expressionsBinArgsExpressions.numbers) delete[] expressionsBinArgsExpressions.numbers;
